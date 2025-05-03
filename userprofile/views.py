@@ -53,7 +53,7 @@ class DaysAndTimeViews(APIView):
     def patch(self,request):
         try:
             Profile_day = request.user.profile
-        except profile_day.DoesNotExist:
+        except Profile_day.DoesNotExist:
             return Response({"message":_("Profile not found")}, status=status.HTTP_404_NOT_FOUND)
         
         serializer=DaysAndTime(Profile_day,data=request.data,partial=True)
