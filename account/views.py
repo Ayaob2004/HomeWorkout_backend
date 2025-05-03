@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 
 def send_otp_email(email, otp_code):
     subject = '🔐 Verify your HomeWorkout Account with this OTP'
-    from_email = 'ayaobaid04@gmail.com'
+    from_email = 'homeworkout308@gmail.com'
     to = [email]
 
     # HTML content
