@@ -63,9 +63,14 @@ class DaysAndTimeViews(APIView):
         return Response(serializer.errors ,status=status.HTTP_400_BAD_REQUEST)
     
 class ProfileViews(APIView):
-    permissions_classes = [permissions.IsAuthenticated]
+    # permissions_classes = [permissions.IsAuthenticated]
     
     def get(self,request):
-        profile = request.user.profile
+        try:
+            
+            profile = request.user.profile
+        except profile.DoesNotExist:
+            return Response({"message":_("Profile not found")}, status=status.HTTP_404_NOT_FOUND)    
         serializer=ProfileSer(profile)
-        return Response(serializer.data)        
+        return Response(serializer.data)
+                

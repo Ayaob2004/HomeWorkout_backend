@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-27 17:37+0300\n"
+"POT-Creation-Date: 2025-05-06 13:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,6 +20,6 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #: .\userprofile\views.py:25 .\userprofile\views.py:41
-#: .\userprofile\views.py:57
+#: .\userprofile\views.py:57 .\userprofile\views.py:73
 msgid "Profile not found"
 msgstr "لم يتم العثور على الملف الشخصي"
