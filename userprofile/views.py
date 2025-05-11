@@ -6,6 +6,7 @@ from .models import Profile, MuscleGroup
 from .serializers import ProfileBasicInfo, Moredetails, DaysAndTime , MuscleGroupSer , ProfileSer
 from rest_framework import generics
 from django.utils.translation import gettext_lazy as _  
+from rest_framework.permissions import AllowAny  
 
 
 
@@ -74,3 +75,26 @@ class ProfileViews(APIView):
         serializer=ProfileSer(profile)
         return Response(serializer.data)
                 
+                
+
+class AllProfilesView(generics.ListAPIView):
+    serializer_class = ProfileSer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        try:
+            return Profile.objects.all()
+        except Exception as e:
+            # Optionally log the error or customize behavior
+            return Profile.objects.none()  # return empty queryset
+
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {"error": "Failed to retrieve profiles", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )                
