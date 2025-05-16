@@ -17,20 +17,23 @@ class ExerciseView(APIView):
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
-            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
-        
+            return Response({"detail": "You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)
+    
         name = request.data.get('name')
-        if Exercise.objects.filter(name=name).exists():
+        level = request.data.get('level')  
+
+        if Exercise.objects.filter(name=name, level=level).exists():
             return Response(
-                {"detail": f"Exercise with name '{name}' already exists."},
+                {"detail": f"Exercise with name '{name}' and level '{level}' already exists."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         serializer = ExerciseSerializers(data=request.data)
         if serializer.is_valid():
-            exercise = serializer.save()  
+            exercise = serializer.save()
             return Response(ExerciseSerializers(exercise).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     
     def put(self, request, pk):
         try:
@@ -64,6 +67,33 @@ class ExerciseView(APIView):
 
 class ExerciseListView(APIView):
     def get(self, request):
-        exercises = Exercise.objects.all()
-        serializer = ExerciseSerializers(exercises, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)    
+        try:
+            exercises = Exercise.objects.all()
+            serializer = ExerciseSerializers(exercises, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exercise.DoesNotExist:
+            return Response({"detail":"Exercise not found"},status=status.HTTP_404_NOT_FOUND)    
+
+
+class ExerciseFilterView(APIView):
+    permission_classes = [IsAdminUser]  
+
+    def get(self, request):
+        muscle_group_ids = request.query_params.get('muscle_group', None)
+        level = request.query_params.get('level', None)
+
+        try:
+            exercises = Exercise.objects.all()
+
+            if muscle_group_ids:
+                ids = muscle_group_ids.split(',')
+                exercises = exercises.filter(muscle_group__id__in=ids)
+
+            if level:
+                exercises = exercises.filter(level=level)
+
+            serializer = ExerciseSerializers(exercises.distinct(), many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
