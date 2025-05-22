@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, OTP
+from .models import CustomUser, OTP, UserState, UserChallenge
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -14,3 +14,5 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(OTP)
+admin.site.register(UserState)
+admin.site.register(UserChallenge)

@@ -1,6 +1,6 @@
 from django.urls import path
 # from . import views
-from .views import ExerciseView , ExerciseListView ,ExerciseFilterView
+from .views import ExerciseView , ExerciseListView ,ExerciseFilterView,UserChallengeDetailView
 from userprofile.views import AllUsersView, AdminProfileDetailView
 
 
@@ -14,6 +14,7 @@ urlpatterns = [
     path('profile/<int:pk>/', AdminProfileDetailView.as_view(), name='admin-profile-detail'),
     path('profile/<int:pk>/update/', AdminProfileDetailView.as_view(), name='admin-update-profile'),
     path('exercises/filter/', ExerciseFilterView.as_view(), name='exercise-filter'),
+    path('user-challenge-detail/', UserChallengeDetailView.as_view(), name='user-challenge-detail'),
 
 
 

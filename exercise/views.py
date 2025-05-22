@@ -9,7 +9,10 @@ from .serializers import ExerciseSerializers
 from django.utils.translation import gettext_lazy as _  
 from rest_framework.decorators import api_view ,permission_classes , authentication_classes
 from django.views.decorators.csrf import csrf_exempt  
-
+from rest_framework.permissions import IsAuthenticated
+from account.models import UserChallenge
+from .serializers import UserChallengeDetailSerializer
+from django.shortcuts import get_object_or_404
 
 class ExerciseView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -37,21 +40,21 @@ class ExerciseView(APIView):
     
     def put(self, request, pk):
         try:
-           exercise = Exercise.objects.get(pk=pk)
+            exercise = Exercise.objects.get(pk=pk)
         except Exercise.DoesNotExist:
-           return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = ExerciseSerializers(exercise, data=request.data)
         if serializer.is_valid():
-           serializer.save()
-           return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         try:
-           exercise = Exercise.objects.get(pk=pk)
+            exercise = Exercise.objects.get(pk=pk)
         except Exercise.DoesNotExist:
-           return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
 
         exercise.delete()  
         return Response({"detail": "Exercise deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -97,3 +100,12 @@ class ExerciseFilterView(APIView):
 
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class UserChallengeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        user_challenge = get_object_or_404(UserChallenge, user=user)
+        serializer = UserChallengeDetailSerializer(user_challenge)
+        return Response(serializer.data)
