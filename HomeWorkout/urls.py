@@ -28,7 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/',include('account.urls')),
     path('profile/',include('userprofile.urls')),
-    path('boss/',include('adminforweb.urls')),
+    path('boss/',include('exercise.urls')),
 
 ]
 urlpatterns += [
