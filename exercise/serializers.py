@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise
 from account.models import UserChallenge
@@ -14,8 +13,11 @@ class ExerciseSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Exercise
-        fields = ['name', 'description', 'duration_seconds', 'repetitions', 'calories_burned', 'level', 'image', 'type', 'muscle_group']
-
+        fields = [
+            'name', 'description', 'image', 'type', 'goal', 'muscle_group',
+            'base_repetitions', 'base_duration_seconds', 'base_calories_burned'
+        ]
+        
 class DayExerciseSerializer(serializers.ModelSerializer):
     exercise = ExerciseSerializers()
 
