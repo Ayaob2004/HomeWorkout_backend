@@ -1,8 +1,13 @@
 from django.urls import path
 # from . import views
-from .views import ExerciseView , ExerciseListView ,ExerciseFilterView,UserChallengeDetailView
+from .views import ExerciseView , ExerciseListView ,ExerciseFilterView, GenerateChallengeView,UserChallengeDetailView
 from userprofile.views import AllUsersView, AdminProfileDetailView
-
+from .views import (
+    ChallengeListView,
+    ChallengeDetailView,
+    ChallengeDayDetailView,
+    ExerciseDetailView
+)
 
 urlpatterns = [
     path('create_exercise/',ExerciseView.as_view() , name='create_exercise'),
@@ -14,9 +19,13 @@ urlpatterns = [
     path('profile/<int:pk>/', AdminProfileDetailView.as_view(), name='admin-profile-detail'),
     path('profile/<int:pk>/update/', AdminProfileDetailView.as_view(), name='admin-update-profile'),
     path('exercises/filter/', ExerciseFilterView.as_view(), name='exercise-filter'),
+    
     path('user-challenge-detail/', UserChallengeDetailView.as_view(), name='user-challenge-detail'),
-
-
+    path('challenges/', ChallengeListView.as_view(), name='challenge-list'),
+    path('challenges/<int:pk>/', ChallengeDetailView.as_view(), name='challenge-detail'),
+    path('challenges/<int:pk>/day/<int:day_number>/', ChallengeDayDetailView.as_view(), name='challenge-day-detail'),
+    path('exercises/<int:pk>/', ExerciseDetailView.as_view(), name='exercise-detail'),
+    path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
 
 
 ]
