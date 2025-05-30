@@ -160,9 +160,7 @@ class ChallengeDayDetailView(APIView):
             {
                 'name': ex.exercise.name,
                 'image': request.build_absolute_uri(ex.exercise.image.url) if ex.exercise.image else None,
-                'duration_seconds': ex.duration_seconds,
                 'repetitions': ex.repetitions,
-                'calories_burned': ex.calories_burned
             }
             for ex in day_exercises
         ]
