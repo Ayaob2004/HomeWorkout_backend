@@ -1,12 +1,15 @@
 from django.urls import path
-# from . import views
-from .views import ExerciseView , ExerciseListView ,ExerciseFilterView, GenerateChallengeView,UserChallengeDetailView
 from userprofile.views import AllUsersView, AdminProfileDetailView
 from .views import (
     ChallengeListView,
     ChallengeDetailView,
     ChallengeDayDetailView,
-    ExerciseDetailView
+    ExerciseView,
+    ExerciseListView,
+    ExerciseFilterView,
+    GenerateChallengeView,
+    UserChallengeDetailView,
+    DayExerciseDetailView
 )
 
 urlpatterns = [
@@ -24,8 +27,7 @@ urlpatterns = [
     path('challenges/', ChallengeListView.as_view(), name='challenge-list'),
     path('challenges/<int:pk>/', ChallengeDetailView.as_view(), name='challenge-detail'),
     path('challenges/<int:pk>/day/<int:day_number>/', ChallengeDayDetailView.as_view(), name='challenge-day-detail'),
-    path('exercises/<int:pk>/', ExerciseDetailView.as_view(), name='exercise-detail'),
     path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
-
+    path('get-exercise-day/<int:pk>/', DayExerciseDetailView.as_view(), name='get-exercise-day'),
 
 ]

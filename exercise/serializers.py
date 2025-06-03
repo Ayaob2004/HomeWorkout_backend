@@ -55,3 +55,18 @@ class UserChallengeDetailSerializer(serializers.ModelSerializer):
             day_number=obj.current_day
         )
         return ChallengeDaySerializer(challenge_days, many=True).data
+
+
+class SimpleUserChallengeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChallenge
+        fields = ['id', 'challenge'] 
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['challenge'] = {
+            'id': instance.challenge.id,
+            'name': instance.challenge.name
+        }
+        return representation
+    

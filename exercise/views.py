@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from .models import Exercise
-from .serializers import ExerciseSerializers
+from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer
 from django.utils.translation import gettext_lazy as _  
 from rest_framework.decorators import api_view ,permission_classes , authentication_classes
 from django.views.decorators.csrf import csrf_exempt  
@@ -134,7 +134,7 @@ class UserChallengeDetailView(APIView):
     def get(self, request):
         user = request.user
         user_challenge = get_object_or_404(UserChallenge, user=user)
-        serializer = UserChallengeDetailSerializer(user_challenge)
+        serializer = SimpleUserChallengeSerializer(user_challenge)
         return Response(serializer.data)
 
 
@@ -158,6 +158,7 @@ class ChallengeDayDetailView(APIView):
         total_exercises = day_exercises.count()
         exercises_data = [
             {
+                'day_exercise_id': ex.id,
                 'name': ex.exercise.name,
                 'image': request.build_absolute_uri(ex.exercise.image.url) if ex.exercise.image else None,
                 'repetitions': ex.repetitions,
@@ -172,12 +173,30 @@ class ChallengeDayDetailView(APIView):
         })
 
 
+class DayExerciseDetailView(APIView):
+    permission_classes = [IsAuthenticated]
 
-class ExerciseDetailView(generics.RetrieveAPIView):
-    queryset = Exercise.objects.all()
-    serializer_class = ExerciseSerializers
-    lookup_field = 'pk'
-
+    def get(self, request, pk):
+        try:
+            day_exercise = DayExercise.objects.select_related('exercise', 'challenge_day').get(pk=pk)
+            exercise = day_exercise.exercise
+            data = {
+                "day_exercise_id": day_exercise.id,
+                "exercise": {
+                    "id": exercise.id,
+                    "name": exercise.name,
+                    "description": exercise.description,
+                    "goal": exercise.goal,
+                    "type": exercise.type,
+                    "repetitions": day_exercise.repetitions,
+                    "duration_seconds": day_exercise.duration_seconds,
+                    "calories_burned": day_exercise.calories_burned,
+                    "image": request.build_absolute_uri(exercise.image.url) if exercise.image else None,
+                },
+            }
+            return Response(data)
+        except DayExercise.DoesNotExist:
+            return Response({"error": "DayExercise not found."}, status=status.HTTP_404_NOT_FOUND)
 
 User = get_user_model()
 
@@ -204,7 +223,7 @@ class GenerateChallengeView(APIView):
             return Response({
                 "message": "Challenge created successfully",
                 "challenge_id": challenge.id,
-                "challenge_name": challenge.name
+                "challenge_name": challenge.name,
             }, status=status.HTTP_201_CREATED)
         except Profile.DoesNotExist:
             return Response(
