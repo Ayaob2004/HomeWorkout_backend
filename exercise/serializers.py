@@ -17,7 +17,7 @@ class ExerciseSerializers(serializers.ModelSerializer):
             'name', 'description', 'image', 'type', 'goal', 'muscle_group',
             'base_repetitions', 'base_duration_seconds', 'base_calories_burned'
         ]
-        
+
 class DayExerciseSerializer(serializers.ModelSerializer):
     exercise = ExerciseSerializers()
 

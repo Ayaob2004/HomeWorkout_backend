@@ -1,9 +1,14 @@
 from django.urls import path
 from userprofile.views import AllUsersView, AdminProfileDetailView
 from .views import (
+    ChallengeDayListView,
+    ChallengeDayView,
     ChallengeListView,
     ChallengeDetailView,
     ChallengeDayDetailView,
+    ChallengeView,
+    DayExerciseView,
+    ExerciseDayListView,
     ExerciseView,
     ExerciseListView,
     ExerciseFilterView,
@@ -30,4 +35,21 @@ urlpatterns = [
     path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
     path('get-exercise-day/<int:pk>/', DayExerciseDetailView.as_view(), name='get-exercise-day'),
 
+    path('create-challenge/',ChallengeView.as_view(),name='create-challenge'),
+    path('update-challenge/<int:pk>/',ChallengeView.as_view(),name='update-challenge'),
+    path('delete-challenge/<int:pk>/',ChallengeView.as_view(),name = 'delete-challenge'),
+    path('retrieve-challenge/<int:pk>/',ChallengeView.as_view(),name = 'retrieve-challenge'),
+    path('retrieve-all-challenge/',ChallengeListView.as_view(),name='retrieve-all'),
+    
+    path('create-challenge-day/',ChallengeDayView.as_view(),name='create-challenge-day'),
+    path('update-challenge-day/<int:pk>/',ChallengeDayView.as_view(),name='update-challenge-day'),
+    path('delete-challenge-day/<int:pk>/',ChallengeDayView.as_view(),name='detete-challenge-day'),
+    path('retrieve-challenge-day/<int:pk>/',ChallengeDayView.as_view(),name='retrieve-challenge-day'),
+    path('retrieve-all-challenge-day/',ChallengeDayListView.as_view(),name='retrieve-all'),
+    
+    path('create-day-exercise/',DayExerciseView.as_view(),name='create-day-exercise'),
+    path('update-day-exercise/<int:pk>/',DayExerciseView.as_view(),name='update-day-exercise'),
+    path('delete-day-exercise/<int:pk>/',DayExerciseView.as_view(),name='detete-day-exercise'),
+    path('retrieve-day-exercise/<int:pk>/',DayExerciseView.as_view(),name='retrieve-day-exercise'),
+    path('retrieve-all-day-exercise/',ExerciseDayListView.as_view(),name='retrieve-all'),
 ]

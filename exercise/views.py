@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from .models import Exercise
-from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer
+from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer
 from django.utils.translation import gettext_lazy as _  
 from rest_framework.decorators import api_view ,permission_classes , authentication_classes
 from django.views.decorators.csrf import csrf_exempt  
@@ -110,6 +110,179 @@ class ExerciseFilterView(APIView):
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ChallengeView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return Response({"detail": "You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)
+    
+        name = request.data.get('name')
+        level = request.data.get('level')  
+
+        if Challenge.objects.filter(name=name, level=level).exists():
+            return Response(
+                {"detail": f"Challenge with name '{name}' and level '{level}' already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        serializer = ChallengeSerializer(data=request.data)
+        if serializer.is_valid():
+            challenge = serializer.save()
+            return Response(ChallengeSerializer(challenge).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    def put(self, request, pk):
+        try:
+            challenge = Challenge.objects.get(pk=pk)
+        except Challenge.DoesNotExist:
+            return Response({"detail": "Challenge not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ChallengeSerializer(challenge, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request,pk):
+        try:
+            challenge = Challenge.objects.get(pk=pk)
+        except Challenge.DoesNotExist:
+            return Response({"detial":"Challenge not found."}, status=status.HTTP_404_NOT_FOUND)
+        challenge.delete()
+        return Response({"detial":"Challenge deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+
+    def get(self,request,pk):
+        try:
+            challenge = Challenge.objects.get(pk=pk)
+            serializer = ChallengeSerializer(challenge)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Challenge.DoesNotExist:
+            return Response({"detail": "Challenge not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+
+class ChallengeListView(APIView):
+    permission_classes = [IsAdminUser]  
+    def get(self, request):
+        try:
+            challenge = Challenge.objects.all()
+            serializer = ChallengeSerializer(challenge, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Challenge.DoesNotExist:
+            return Response({"detail":"Challenge not found"},status=status.HTTP_404_NOT_FOUND)    
+        
+
+
+class ChallengeDayView(APIView):
+    permission_classes = [IsAdminUser]  
+    
+    def post(self,request,*args, **kwargs):
+        if not request.user.is_staff:
+            return Response({"detail": "You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)
+        
+        
+        serializer = ChallengeDaySerializer(data=request.data)
+        if serializer.is_valid():
+            challengeDay = serializer.save()
+            return Response(ChallengeDaySerializer(challengeDay).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            challengeDay = ChallengeDay.objects.get(pk=pk)
+        except ChallengeDay.DoesNotExist:
+            return Response({"detail": "Challenge day not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ChallengeDaySerializer(challengeDay, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+    
+    def delete(self, request,pk):
+        try:
+            challengeDay = ChallengeDay.objects.get(pk=pk)
+        except ChallengeDay.DoesNotExist:
+            return Response({"detial":"Challenge day not found."}, status=status.HTTP_404_NOT_FOUND)
+        challengeDay.delete()
+        return Response({"detial":"Challenge day deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+    
+    def get(self,request,pk):
+        try:
+            challengeDay = ChallengeDay.objects.get(pk=pk)
+            serializer = ChallengeDaySerializer(challengeDay)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ChallengeDay.DoesNotExist:
+            return Response({"detail": "Challenge day not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ChallengeDayListView(APIView):
+    permission_classes = [IsAdminUser]  
+    def get(self, request):
+        try:
+            challengeday = ChallengeDay.objects.all()
+            serializer = ChallengeDaySerializer(challengeday, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ChallengeDay.DoesNotExist:
+            return Response({"detail":"Challenge day not found"},status=status.HTTP_404_NOT_FOUND)    
+        
+
+
+class DayExerciseView(APIView):
+    permission_classes = [IsAdminUser] 
+    
+    def post(self,request,*args,**kwargs):
+        if not request.user.is_staff:
+            return Response({"detail":"You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)   
+        
+        serializer = DayExerciseSerializer(data=request.data)
+        if serializer.is_valid():
+            dayExercise = serializer.save()
+            return Response(DayExerciseSerializer(dayExercise).data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            dayExercise = DayExercise.objects.get(pk=pk)
+        except DayExercise.DoesNotExist:
+            return Response({"detail": "day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = DayExerciseSerializer(dayExercise, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+    
+    def delete(self, request,pk):
+        try:
+            dayExercise = DayExercise.objects.get(pk=pk)
+        except DayExercise.DoesNotExist:
+            return Response({"detial":"day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+        dayExercise.delete()
+        return Response({"detial":"day exercise deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+    
+    def get(self,request,pk):
+        try:
+            dayExercise = DayExercise.objects.get(pk=pk)
+            serializer = DayExerciseSerializer(dayExercise)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except DayExercise.DoesNotExist:
+            return Response({"detail": "day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ExerciseDayListView(APIView):
+    permission_classes = [IsAdminUser]  
+    def get(self, request):
+        try:
+            dayExercise = DayExercise.objects.all()
+            serializer = DayExerciseSerializer(dayExercise, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except DayExercise.DoesNotExist:
+            return Response({"detail":"day exercise not found"},status=status.HTTP_404_NOT_FOUND)    
+
+#for user
+
 def generate_level_values(exercise, level):
     base_r = exercise.base_repetitions or 0
     base_d = exercise.base_duration_seconds or 0
@@ -123,11 +296,6 @@ def generate_level_values(exercise, level):
         return base_r + 10, base_d + 30, base_c + 40
     else:
         return base_r, base_d, base_c
-
-
-
-
-#for user
 
 class UserChallengeDetailView(APIView):
     permission_classes = [IsAuthenticated]
