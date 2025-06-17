@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser,UserChallenge
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-
+from exercise.serializers import ChallengeSerializer
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,3 +13,10 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = get_user_model().objects.create_user(**validated_data)  # Create the user properly
         return user
+
+class UserChallengeSerializer(serializers.ModelSerializer):
+    challenge = ChallengeSerializer()
+    
+    class Meta:
+        model = UserChallenge
+        fields = ['challenge']

@@ -13,6 +13,7 @@ from .views import (
     ExerciseListView,
     ExerciseFilterView,
     GenerateChallengeView,
+    AllChallengesView,
     UserChallengeDetailView,
     DayExerciseDetailView
 )
@@ -28,12 +29,12 @@ urlpatterns = [
     path('profile/<int:pk>/update/', AdminProfileDetailView.as_view(), name='admin-update-profile'),
     path('exercises/filter/', ExerciseFilterView.as_view(), name='exercise-filter'),
     
-    path('user-challenge-detail/', UserChallengeDetailView.as_view(), name='user-challenge-detail'),
     path('challenges/', ChallengeListView.as_view(), name='challenge-list'),
     path('challenges/<int:pk>/', ChallengeDetailView.as_view(), name='challenge-detail'),
     path('challenges/<int:pk>/day/<int:day_number>/', ChallengeDayDetailView.as_view(), name='challenge-day-detail'),
     path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
     path('get-exercise-day/<int:pk>/', DayExerciseDetailView.as_view(), name='get-exercise-day'),
+    path('allchallenges/', AllChallengesView.as_view(), name='user-and-all-challenges'),
 
     path('create-challenge/',ChallengeView.as_view(),name='create-challenge'),
     path('update-challenge/<int:pk>/',ChallengeView.as_view(),name='update-challenge'),

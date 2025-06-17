@@ -15,6 +15,7 @@ from .serializers import UserChallengeDetailSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
+from account.serializers import UserChallengeSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -297,14 +298,6 @@ def generate_level_values(exercise, level):
     else:
         return base_r, base_d, base_c
 
-class UserChallengeDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        user = request.user
-        user_challenge = get_object_or_404(UserChallenge, user=user)
-        serializer = SimpleUserChallengeSerializer(user_challenge)
-        return Response(serializer.data)
-
 
 class ChallengeListView(generics.ListAPIView):
     queryset = Challenge.objects.all()
@@ -455,3 +448,23 @@ class GenerateChallengeView(APIView):
             is_completed=False
         )
         return challenge
+
+class AllChallengesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        user_challenge = UserChallenge.objects.filter(user=user).select_related('challenge').first()
+        user_challenge_data = {
+            'id': user_challenge.challenge.id,
+            'name': user_challenge.challenge.name
+        } if user_challenge else None
+        public_challenges = Challenge.objects.exclude(
+            id__in=UserChallenge.objects.values_list('challenge_id', flat=True)
+        )
+        public_challenges_data = ChallengeSerializer(public_challenges, many=True).data
+        return Response({
+            'user_challenge': user_challenge_data,
+            'public_challenges': public_challenges_data
+        })
