@@ -15,7 +15,12 @@ from .views import (
     GenerateChallengeView,
     AllChallengesView,
     UserChallengeDetailView,
-    DayExerciseDetailView
+    DayExerciseDetailView,
+    HealthArticleView,
+    HealthArticleListView,
+    VisibleArticlesView,
+    HiddenArticlesView,
+    ToggleArticleVisibilityView,
 )
 
 urlpatterns = [
@@ -53,4 +58,15 @@ urlpatterns = [
     path('delete-day-exercise/<int:pk>/',DayExerciseView.as_view(),name='detete-day-exercise'),
     path('retrieve-day-exercise/<int:pk>/',DayExerciseView.as_view(),name='retrieve-day-exercise'),
     path('retrieve-all-day-exercise/',ExerciseDayListView.as_view(),name='retrieve-all'),
+    
+    path('create-article/',HealthArticleView.as_view(),name='create-article'),
+    path('update-article/<int:pk>/',HealthArticleView.as_view(),name='update-article'),
+    path('delete-article/<int:pk>/',HealthArticleView.as_view(),name='delete-article'),
+    path('retrieve-article/<int:pk>/',HealthArticleView.as_view(),name='retrieve-article'),
+    path('retrieve-all-articles/',HealthArticleListView.as_view(),name='retrieve-all-articles'),
+    path('visible-articles/',VisibleArticlesView.as_view(),name='visible-articles'),
+    path('hidden-articles/',HiddenArticlesView.as_view(),name='hidden-articles'),
+    path('toggle-visibility/<int:pk>/', ToggleArticleVisibilityView.as_view(), name='toggle-article-visibility'),
+
+
 ]
