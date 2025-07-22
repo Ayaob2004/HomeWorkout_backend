@@ -47,6 +47,7 @@ class ChallengeDay(models.Model):
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
     week_number =  models.PositiveIntegerField(validators=[MaxValueValidator(4)])
     day_number =  models.PositiveIntegerField(validators=[MaxValueValidator(28)])
+    is_available = models.BooleanField(default=False)
     def __str__(self):
         return f"Week {self.week_number}, Day {self.day_number} of {self.challenge.name}"
 

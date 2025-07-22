@@ -14,8 +14,9 @@ from .views import (
     ExerciseFilterView,
     GenerateChallengeView,
     AllChallengesView,
-    UserChallengeDetailView,
-    DayExerciseDetailView
+    # UserChallengeDetailView,
+    DayExerciseDetailView,
+    StartChallengeDayView
 )
 
 urlpatterns = [
@@ -35,6 +36,9 @@ urlpatterns = [
     path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
     path('get-exercise-day/<int:pk>/', DayExerciseDetailView.as_view(), name='get-exercise-day'),
     path('allchallenges/', AllChallengesView.as_view(), name='user-and-all-challenges'),
+    path('start-challenge/<int:challenge_id>/', StartChallengeDayView.as_view(), name='start-challenge-day'),
+
+
 
     path('create-challenge/',ChallengeView.as_view(),name='create-challenge'),
     path('update-challenge/<int:pk>/',ChallengeView.as_view(),name='update-challenge'),

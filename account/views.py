@@ -130,6 +130,10 @@ class LoginView(APIView):
             'refresh': str(refresh),
         }, status=status.HTTP_200_OK)
 
+class DashBoardLogin(APIView):
+    permission_classes = [AllowAny]
+    # permission_classes = [IsAdmin]
+
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]

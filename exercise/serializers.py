@@ -39,7 +39,7 @@ class ChallengeDaySerializer(serializers.ModelSerializer):
 class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
-        fields = ['name', 'duration_weeks', 'level']
+        fields = ['id','name', 'duration_weeks', 'level']
 
 class UserChallengeDetailSerializer(serializers.ModelSerializer):
     challenge = ChallengeSerializer()

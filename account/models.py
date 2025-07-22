@@ -43,6 +43,6 @@ class UserState(models.Model):
 class UserChallenge(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE)
-    started_at = models.DateField(null=True, default=datetime.now())
+    started_at = models.DateField(null=True, blank=True)
     current_day = models.PositiveIntegerField(null=True,validators=[MaxValueValidator(28)])
     is_completed = models.BooleanField(null=True)

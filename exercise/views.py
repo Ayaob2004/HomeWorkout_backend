@@ -24,6 +24,10 @@ from userprofile.models import Profile
 from django.contrib.auth import get_user_model
 from datetime import datetime
 import random
+from account.tasks import unlock_next_day
+from django.utils import timezone
+from rest_framework import status
+from account.models import UserChallenge, UserState
 
 # for admin
 
@@ -412,10 +416,12 @@ class GenerateChallengeView(APIView):
 
         for week in range(1, 5):
             for day in range(1, 8):
+                day_number=day + ((week - 1) * 7)
                 challenge_day = ChallengeDay.objects.create(
                     challenge=challenge,
                     week_number=week,
-                    day_number=day + ((week - 1) * 7)
+                    day_number=day_number,
+                    is_available=(day_number == 1)
                 )
 
                 exercises = Exercise.objects.filter(
@@ -468,3 +474,43 @@ class AllChallengesView(APIView):
             'user_challenge': user_challenge_data,
             'public_challenges': public_challenges_data
         })
+    
+
+
+
+
+
+
+
+
+
+class StartChallengeDayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, challenge_id):
+        user = request.user
+
+        try:
+            user_challenge = UserChallenge.objects.get(user=user, challenge_id=challenge_id)
+            current_day = user_challenge.current_day or 1
+            challenge_day = ChallengeDay.objects.get(challenge_id=challenge_id, day_number=current_day)
+            # حساب السعرات والوقت
+            day_exercises = DayExercise.objects.filter(challenge_day=challenge_day)
+            total_duration = sum([ex.duration_seconds or 0 for ex in day_exercises])
+            total_calories = sum([ex.calories_burned or 0 for ex in day_exercises])
+            # تحديث UserState
+            user_state, _ = UserState.objects.get_or_create(user=user)
+            user_state.total_minutes = (user_state.total_minutes or 0) + (total_duration / 60)
+            user_state.total_calories = (user_state.total_calories or 0) + total_calories
+            user_state.updated_at = timezone.now()
+            user_state.save()
+
+            unlock_next_day.apply_async(args=[user_challenge.id], countdown=60)  # 24 ساعة
+
+            return Response({
+                "message": f"تم بدء التمرين لليوم {current_day}، سيتم فتح اليوم التالي خلال 24 ساعة."
+            }, status=status.HTTP_200_OK)
+        except UserChallenge.DoesNotExist:
+            return Response({"error": "التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+        except ChallengeDay.DoesNotExist:
+            return Response({"error": "يوم التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
