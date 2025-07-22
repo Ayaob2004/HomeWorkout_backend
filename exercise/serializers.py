@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise
+from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise ,HealthArticle
 from account.models import UserChallenge
 from userprofile.models import MuscleGroup
 
@@ -9,7 +9,7 @@ class MuscleGroupSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 class ExerciseSerializers(serializers.ModelSerializer):
-    muscle_group = MuscleGroupSerializer(many=True)
+    # muscle_group = MuscleGroupSerializer(many=True)
 
     class Meta:
         model = Exercise
@@ -40,6 +40,14 @@ class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = ['id','name', 'duration_weeks', 'level']
+
+class HealthArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HealthArticle
+        fields = ['id','title','content','cover_image','publish_date','is_visible']
+        extra_kwargs = {
+            'is_visible': {'required': False, 'default': True} 
+        }
 
 class UserChallengeDetailSerializer(serializers.ModelSerializer):
     challenge = ChallengeSerializer()

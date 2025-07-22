@@ -34,8 +34,8 @@ ALLOWED_HOSTS = ['*']
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -57,8 +57,9 @@ INSTALLED_APPS = [
     'account',
     'userprofile',
     'exercise',
-    'rest_framework_simplejwt',
+    'dashboard',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [

@@ -64,3 +64,12 @@ class DayExercise(models.Model):
     def __str__(self):
         return f"{self.exercise.name} on {self.challenge_day}"
 
+class HealthArticle(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    cover_image = models.ImageField(upload_to='articles/covers/', blank=True, null=True)
+    publish_date = models.DateField()
+    is_visible = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title

@@ -31,6 +31,8 @@ urlpatterns = [
     path('api/',include('account.urls')),
     path('profile/',include('userprofile.urls')),
     path('boss/',include('exercise.urls')),
+    path('dashboard/', include('dashboard.urls')),
+
 
 ]
 urlpatterns += [

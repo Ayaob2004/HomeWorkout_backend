@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
-from .models import Exercise
-from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer
+from .models import *
+from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer ,HealthArticleSerializer
 from django.utils.translation import gettext_lazy as _  
 from rest_framework.decorators import api_view ,permission_classes , authentication_classes
 from django.views.decorators.csrf import csrf_exempt  
@@ -286,6 +286,98 @@ class ExerciseDayListView(APIView):
         except DayExercise.DoesNotExist:
             return Response({"detail":"day exercise not found"},status=status.HTTP_404_NOT_FOUND)    
 
+
+class HealthArticleView(APIView):
+    permission_classes = [IsAdminUser]
+    
+    def post(self,request,*args,**kwargs):
+        if not request.user.is_staff:
+            return Response({"detail":"You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)   
+        
+        title = request.data.get('title')
+        if HealthArticle.objects.filter(title=title).exists():
+            return Response(
+                {"detail": f"Article with title '{title}' already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = HealthArticleSerializer(data=request.data)
+        if serializer.is_valid():
+            health_article = serializer.save()
+            return Response(HealthArticleSerializer(health_article).data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, pk):
+        try:
+            health_article = HealthArticle.objects.get(pk=pk)
+        except HealthArticle.DoesNotExist:
+            return Response({"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = HealthArticleSerializer(health_article, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request,pk):
+        try:
+            health_article = HealthArticle.objects.get(pk=pk)
+        except HealthArticle.DoesNotExist:
+            return Response({"detial":"article not found."}, status=status.HTTP_404_NOT_FOUND)
+        health_article.delete()
+        return Response({"detial":"Article deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+    
+    def get(request,self,pk):
+        try:
+            health_article = HealthArticle.objects.get(pk=pk)
+            serializer = HealthArticleSerializer(health_article)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except HealthArticle.DoesNotExist:
+            return Response({"detial":"Article not found."},status=status.HTTP_404_NOT_FOUND)
+
+class HealthArticleListView(APIView):
+    permission_classes = [IsAdminUser]  
+    def get(self, request):
+        try:
+            health_article = HealthArticle.objects.all()
+            serializer = HealthArticleSerializer(health_article, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except HealthArticle.DoesNotExist:
+            return Response({"detail":"Articles not found"},status=status.HTTP_404_NOT_FOUND)    
+
+
+class VisibleArticlesView(APIView):
+    permission_classes = [IsAdminUser]
+    def get(self,request):
+        try:
+            visible_articles = HealthArticle.objects.filter(is_visible=True)
+            serializer = HealthArticleSerializer(visible_articles, many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except HealthArticle.DoesNotExist:
+            return Response({"detail":"Articles not found"},status=status.HTTP_404_NOT_FOUND)
+
+class HiddenArticlesView(APIView):
+    permission_classes = [IsAdminUser]
+    def get(self,request):
+        try:
+            hidden_articles = HealthArticle.objects.filter(is_visible=False)
+            serializer = HealthArticleSerializer(hidden_articles,many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except HealthArticle.DoesNotExist:
+            return Response({"detail":"Articles not found"},status=status.HTTP_404_NOT_FOUND)
+
+class ToggleArticleVisibilityView(APIView):
+    def post(self, request, pk):
+        try:
+            article = HealthArticle.objects.get(pk=pk)
+            article.is_visible = not article.is_visible
+            article.save()
+            
+            state = "shown" if article.is_visible else "hidden"
+            return Response({"message": f"Article is now {state}."}, status=status.HTTP_200_OK)
+        except HealthArticle.DoesNotExist:
+            return Response({"error": "Article not found."}, status=status.HTTP_404_NOT_FOUND)        
+        
+                        
 #for user
 
 def generate_level_values(exercise, level):
