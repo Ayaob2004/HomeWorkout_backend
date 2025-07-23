@@ -395,18 +395,6 @@ def generate_level_values(exercise, level):
         return base_r, base_d, base_c
 
 
-class ChallengeListView(generics.ListAPIView):
-    queryset = Challenge.objects.all()
-    serializer_class = ChallengeSerializer
-
-
-class ChallengeDetailView(generics.ListAPIView):
-    serializer_class = ChallengeDaySerializer
-    def get_queryset(self):
-        challenge_id = self.kwargs['pk']
-        return ChallengeDay.objects.filter(challenge_id=challenge_id).order_by('week_number', 'day_number')
-
-
 class ChallengeDayDetailView(APIView):
     def get(self, request, pk, day_number):
         challenge_day = get_object_or_404(ChallengeDay, challenge_id=pk, day_number=day_number)
@@ -428,7 +416,6 @@ class ChallengeDayDetailView(APIView):
             'total_exercises': total_exercises,
             'exercises': exercises_data
         })
-
 
 class DayExerciseDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -567,15 +554,6 @@ class AllChallengesView(APIView):
             'public_challenges': public_challenges_data
         })
     
-
-
-
-
-
-
-
-
-
 class StartChallengeDayView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -597,7 +575,7 @@ class StartChallengeDayView(APIView):
             user_state.updated_at = timezone.now()
             user_state.save()
 
-            unlock_next_day.apply_async(args=[user_challenge.id], countdown=60)  # 24 ساعة
+            unlock_next_day.apply_async(args=[user_challenge.id], countdown=10)  # 24 ساعة
 
             return Response({
                 "message": f"تم بدء التمرين لليوم {current_day}، سيتم فتح اليوم التالي خلال 24 ساعة."
@@ -606,3 +584,43 @@ class StartChallengeDayView(APIView):
             return Response({"error": "التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
         except ChallengeDay.DoesNotExist:
             return Response({"error": "يوم التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+
+class CheckDayAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id, day_number):
+        try:
+            challenge_day = ChallengeDay.objects.get(challenge_id=challenge_id, day_number=day_number)
+            return Response({
+                "challenge_id": challenge_id,
+                "day_number": day_number,
+                "is_available": challenge_day.is_available
+            }, status=status.HTTP_200_OK)
+        except ChallengeDay.DoesNotExist:
+            return Response({"error": "Challenge day not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ExercisesByMuscleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, muscle_id):
+        muscle = get_object_or_404(MuscleGroup, id=muscle_id)
+        exercises = Exercise.objects.filter(muscle_group=muscle)
+
+        total_duration = sum([ex.base_duration_seconds or 0 for ex in exercises]) / 60  # بالدقائق
+        exercises_data = [
+            {
+                'id': ex.id,
+                'name': ex.name,
+                'image': request.build_absolute_uri(ex.image.url) if ex.image else None,
+                'duration_seconds': ex.base_duration_seconds
+            }
+            for ex in exercises
+        ]
+
+        return Response({
+            'muscle': muscle.name,
+            'total_duration_minutes': round(total_duration, 2),
+            'total_exercises': exercises.count(),
+            'exercises': exercises_data
+        })
