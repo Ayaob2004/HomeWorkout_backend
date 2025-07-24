@@ -1,39 +1,60 @@
-from django.shortcuts import render
+# from django.shortcuts import render
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework import status
+# from rest_framework.permissions import IsAdminUser
+# from rest_framework.authentication import TokenAuthentication
+# from .models import *
+# from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer ,HealthArticleSerializer
+# from django.utils.translation import gettext_lazy as _  
+# from rest_framework.decorators import api_view ,permission_classes , authentication_classes
+# from django.views.decorators.csrf import csrf_exempt  
+# from rest_framework.permissions import IsAuthenticated
+# from account.models import UserChallenge
+# from .serializers import UserChallengeDetailSerializer
+# from django.shortcuts import get_object_or_404
+# from rest_framework import generics
+# from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
+# from account.serializers import UserChallengeSerializer
+# from rest_framework.decorators import api_view
+# from rest_framework.response import Response
+# from rest_framework import status
+# from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise
+# from userprofile.models import Profile
+# from django.contrib.auth import get_user_model
+# from datetime import datetime
+# import random
+# from account.tasks import unlock_next_day
+# from django.utils import timezone
+# from rest_framework import status
+# from account.models import UserChallenge, UserState
+# from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAdminUser
-from rest_framework.authentication import TokenAuthentication
-from .models import *
-from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer ,HealthArticleSerializer
-from django.utils.translation import gettext_lazy as _  
-from rest_framework.decorators import api_view ,permission_classes , authentication_classes
-from django.views.decorators.csrf import csrf_exempt  
-from rest_framework.permissions import IsAuthenticated
-from account.models import UserChallenge
-from .serializers import UserChallengeDetailSerializer
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
-from account.serializers import UserChallengeSerializer
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise
-from userprofile.models import Profile
 from django.contrib.auth import get_user_model
 from datetime import datetime
-import random
-from account.tasks import unlock_next_day
 from django.utils import timezone
-from rest_framework import status
-from account.models import UserChallenge, UserState
 
-# for admin
+# Local application imports
+from .models import Exercise, Challenge, ChallengeDay, DayExercise, HealthArticle, MuscleGroup
+from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer, HealthArticleSerializer
+from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
+from account.models import UserChallenge, UserState
+from userprofile.models import Profile
+from account.tasks import unlock_next_day
+
+# Rest of your views code...
+
+#  for admin
 
 class ExerciseView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
@@ -82,6 +103,9 @@ class ExerciseView(APIView):
     
 
 class ExerciseListView(APIView):
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+
     def get(self, request):
         try:
             exercises = Exercise.objects.all()
@@ -92,7 +116,8 @@ class ExerciseListView(APIView):
 
 
 class ExerciseFilterView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         muscle_group_ids = request.query_params.get('muscle_group', None)
@@ -116,8 +141,8 @@ class ExerciseFilterView(APIView):
 
 
 class ChallengeView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
@@ -168,7 +193,9 @@ class ChallengeView(APIView):
     
 
 class ChallengeListView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+    
     def get(self, request):
         try:
             challenge = Challenge.objects.all()
@@ -180,7 +207,8 @@ class ChallengeListView(APIView):
 
 
 class ChallengeDayView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
     
     def post(self,request,*args, **kwargs):
         if not request.user.is_staff:
@@ -223,7 +251,9 @@ class ChallengeDayView(APIView):
 
 
 class ChallengeDayListView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+    
     def get(self, request):
         try:
             challengeday = ChallengeDay.objects.all()
@@ -231,12 +261,12 @@ class ChallengeDayListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ChallengeDay.DoesNotExist:
             return Response({"detail":"Challenge day not found"},status=status.HTTP_404_NOT_FOUND)    
-        
 
 
 class DayExerciseView(APIView):
     permission_classes = [IsAdminUser] 
-    
+    authentication_classes = [JWTAuthentication]
+
     def post(self,request,*args,**kwargs):
         if not request.user.is_staff:
             return Response({"detail":"You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)   
@@ -277,7 +307,9 @@ class DayExerciseView(APIView):
 
 
 class ExerciseDayListView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+    
     def get(self, request):
         try:
             dayExercise = DayExercise.objects.all()
@@ -288,8 +320,9 @@ class ExerciseDayListView(APIView):
 
 
 class HealthArticleView(APIView):
-    permission_classes = [IsAdminUser]
-    
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+
     def post(self,request,*args,**kwargs):
         if not request.user.is_staff:
             return Response({"detail":"You do not have permission to perform this action."},status=status.HTTP_403_FORBIDDEN)   
@@ -335,7 +368,8 @@ class HealthArticleView(APIView):
             return Response({"detial":"Article not found."},status=status.HTTP_404_NOT_FOUND)
 
 class HealthArticleListView(APIView):
-    permission_classes = [IsAdminUser]  
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
     def get(self, request):
         try:
             health_article = HealthArticle.objects.all()
@@ -346,7 +380,8 @@ class HealthArticleListView(APIView):
 
 
 class VisibleArticlesView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
     def get(self,request):
         try:
             visible_articles = HealthArticle.objects.filter(is_visible=True)
@@ -356,7 +391,8 @@ class VisibleArticlesView(APIView):
             return Response({"detail":"Articles not found"},status=status.HTTP_404_NOT_FOUND)
 
 class HiddenArticlesView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
     def get(self,request):
         try:
             hidden_articles = HealthArticle.objects.filter(is_visible=False)
@@ -366,6 +402,8 @@ class HiddenArticlesView(APIView):
             return Response({"detail":"Articles not found"},status=status.HTTP_404_NOT_FOUND)
 
 class ToggleArticleVisibilityView(APIView):
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
     def post(self, request, pk):
         try:
             article = HealthArticle.objects.get(pk=pk)
@@ -376,8 +414,8 @@ class ToggleArticleVisibilityView(APIView):
             return Response({"message": f"Article is now {state}."}, status=status.HTTP_200_OK)
         except HealthArticle.DoesNotExist:
             return Response({"error": "Article not found."}, status=status.HTTP_404_NOT_FOUND)        
-        
-                        
+
+
 #for user
 
 def generate_level_values(exercise, level):
@@ -394,8 +432,29 @@ def generate_level_values(exercise, level):
     else:
         return base_r, base_d, base_c
 
+def calculate_bmi(weight_kg, height_cm):
+    height_m = height_cm / 100
+    if height_m == 0:
+        return {"error": "Height cannot be zero"}
+
+    bmi = weight_kg / (height_m ** 2)
+    bmi = round(bmi, 2)
+    if bmi < 18.5:
+        status = "Underweight"
+    elif 18.5 <= bmi < 25:
+        status = "Normal"
+    elif 25 <= bmi < 30:
+        status = "Overweight"
+    else:
+        status = "Obese"
+    return {
+        "bmi": bmi,
+        "status": status
+    }
+
 
 class ChallengeDayDetailView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, pk, day_number):
         challenge_day = get_object_or_404(ChallengeDay, challenge_id=pk, day_number=day_number)
         day_exercises = DayExercise.objects.filter(challenge_day=challenge_day).order_by('order')
@@ -564,26 +623,27 @@ class StartChallengeDayView(APIView):
             user_challenge = UserChallenge.objects.get(user=user, challenge_id=challenge_id)
             current_day = user_challenge.current_day or 1
             challenge_day = ChallengeDay.objects.get(challenge_id=challenge_id, day_number=current_day)
-            # حساب السعرات والوقت
+            # Calculate calories and duration
             day_exercises = DayExercise.objects.filter(challenge_day=challenge_day)
             total_duration = sum([ex.duration_seconds or 0 for ex in day_exercises])
             total_calories = sum([ex.calories_burned or 0 for ex in day_exercises])
-            # تحديث UserState
+            # Update UserState
             user_state, _ = UserState.objects.get_or_create(user=user)
             user_state.total_minutes = (user_state.total_minutes or 0) + (total_duration / 60)
             user_state.total_calories = (user_state.total_calories or 0) + total_calories
             user_state.updated_at = timezone.now()
             user_state.save()
 
-            unlock_next_day.apply_async(args=[user_challenge.id], countdown=10)  # 24 ساعة
+            unlock_next_day.apply_async(args=[user_challenge.id], countdown=86400)  # 24 hours
 
             return Response({
-                "message": f"تم بدء التمرين لليوم {current_day}، سيتم فتح اليوم التالي خلال 24 ساعة."
+                "message": f"Workout for day {current_day} has started. The next day will be unlocked in 24 hours."
             }, status=status.HTTP_200_OK)
         except UserChallenge.DoesNotExist:
-            return Response({"error": "التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Challenge not found."}, status=status.HTTP_404_NOT_FOUND)
         except ChallengeDay.DoesNotExist:
-            return Response({"error": "يوم التحدي غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Challenge day not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 class CheckDayAvailabilityView(APIView):
     permission_classes = [IsAuthenticated]
@@ -606,7 +666,6 @@ class ExercisesByMuscleView(APIView):
     def get(self, request, muscle_id):
         muscle = get_object_or_404(MuscleGroup, id=muscle_id)
         exercises = Exercise.objects.filter(muscle_group=muscle)
-
         total_duration = sum([ex.base_duration_seconds or 0 for ex in exercises]) / 60  # بالدقائق
         exercises_data = [
             {
@@ -617,10 +676,33 @@ class ExercisesByMuscleView(APIView):
             }
             for ex in exercises
         ]
-
         return Response({
             'muscle': muscle.name,
             'total_duration_minutes': round(total_duration, 2),
             'total_exercises': exercises.count(),
             'exercises': exercises_data
+        })
+
+class ExerciseByTypeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        exercise_type = request.query_params.get('type')
+        if not exercise_type:
+            return Response({"error": "type is required"}, status=400)
+        exercises = Exercise.objects.filter(type=exercise_type)
+        total_duration = sum(ex.base_duration_seconds or 0 for ex in exercises)
+        count = exercises.count()
+        data = []
+        for ex in exercises:
+            data.append({
+                "id": ex.id,
+                "name": ex.name,
+                "image": request.build_absolute_uri(ex.image.url) if ex.image else None,
+                "duration": ex.base_duration_seconds,
+            })
+        return Response({
+            "exercises": data,
+            "total_duration": total_duration,
+            "count": count
         })

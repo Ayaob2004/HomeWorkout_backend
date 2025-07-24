@@ -11,7 +11,7 @@ from .serializers import RegisterSerializer
 from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-
+from django.contrib.auth import get_user_model
 
 def send_otp_email(email, otp_code):
     subject = '🔐 Verify your HomeWorkout Account with this OTP'
@@ -130,12 +130,30 @@ class LoginView(APIView):
             'refresh': str(refresh),
         }, status=status.HTTP_200_OK)
 
-class DashBoardLogin(APIView):
-    permission_classes = [AllowAny]
-    # permission_classes = [IsAdmin]
-
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         return Response({"message": "Successfully logged out"}, status=200)
+    
+
+from django.contrib.auth import get_user_model
+User = get_user_model()
+class AdminLoginView(APIView):
+    permission_classes = []
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        if not username or not password:
+            return Response({"detail": "Both username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+        if not user.is_superuser:
+            return Response({"detail": "Access denied. Only superuser can login here."}, status=status.HTTP_403_FORBIDDEN)
+        # generate JWT token
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }, status=status.HTTP_200_OK)

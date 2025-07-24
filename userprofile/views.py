@@ -11,12 +11,9 @@ from rest_framework.permissions import IsAdminUser
 
 
 
-
-
 class MuscleGroupListCreateAPIView(generics.ListCreateAPIView):
     queryset = MuscleGroup.objects.all()
     serializer_class = MuscleGroupSer
-     
 
 class ProfileBasicInfoViews(APIView):
     permissions_classes = [permissions.IsAuthenticated]
