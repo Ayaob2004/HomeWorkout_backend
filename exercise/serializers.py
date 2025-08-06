@@ -49,6 +49,12 @@ class HealthArticleSerializer(serializers.ModelSerializer):
             'is_visible': {'required': False, 'default': True} 
         }
 
+
+class HealthArticleSerializeruser(serializers.ModelSerializer):
+    class Meta:
+        model = HealthArticle
+        fields = ['id', 'title', 'content', 'cover_image', 'publish_date']
+
 class UserChallengeDetailSerializer(serializers.ModelSerializer):
     challenge = ChallengeSerializer()
     current_day_info = serializers.SerializerMethodField()

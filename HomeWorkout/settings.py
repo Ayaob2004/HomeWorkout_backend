@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'dashboard',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
+    'corsheaders',
+
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+
 
 ]
 
@@ -174,3 +178,8 @@ EMAIL_HOST_PASSWORD = 'dgvn dzws nius gjzg'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5175",
+]
+CORS_ALLOW_CREDENTIALS = True

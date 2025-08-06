@@ -1,35 +1,3 @@
-# from django.shortcuts import render
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework import status
-# from rest_framework.permissions import IsAdminUser
-# from rest_framework.authentication import TokenAuthentication
-# from .models import *
-# from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer ,HealthArticleSerializer
-# from django.utils.translation import gettext_lazy as _  
-# from rest_framework.decorators import api_view ,permission_classes , authentication_classes
-# from django.views.decorators.csrf import csrf_exempt  
-# from rest_framework.permissions import IsAuthenticated
-# from account.models import UserChallenge
-# from .serializers import UserChallengeDetailSerializer
-# from django.shortcuts import get_object_or_404
-# from rest_framework import generics
-# from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
-# from account.serializers import UserChallengeSerializer
-# from rest_framework.decorators import api_view
-# from rest_framework.response import Response
-# from rest_framework import status
-# from exercise.models import Challenge, ChallengeDay, DayExercise, Exercise
-# from userprofile.models import Profile
-# from django.contrib.auth import get_user_model
-# from datetime import datetime
-# import random
-# from account.tasks import unlock_next_day
-# from django.utils import timezone
-# from rest_framework import status
-# from account.models import UserChallenge, UserState
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -42,12 +10,11 @@ from django.utils import timezone
 
 # Local application imports
 from .models import Exercise, Challenge, ChallengeDay, DayExercise, HealthArticle, MuscleGroup
-from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer, DayExerciseSerializer, HealthArticleSerializer
+from .serializers import ExerciseSerializers, SimpleUserChallengeSerializer,HealthArticleSerializeruser, DayExerciseSerializer, HealthArticleSerializer
 from exercise.serializers import ChallengeSerializer, ChallengeDaySerializer
 from account.models import UserChallenge, UserState
 from userprofile.models import Profile
 from account.tasks import unlock_next_day
-
 # Rest of your views code...
 
 #  for admin
@@ -706,3 +673,20 @@ class ExerciseByTypeView(APIView):
             "total_duration": total_duration,
             "count": count
         })
+
+
+class GetAllArticlesView(APIView):
+    def get(self, request):
+        articles = HealthArticle.objects.filter(is_visible=True).order_by('-publish_date')
+        serializer = HealthArticleSerializeruser(articles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ExerciseDetailView(APIView):
+    def get(self, request, exercise_id):
+        try:
+            exercise = Exercise.objects.get(id=exercise_id)
+        except Exercise.DoesNotExist:
+            return Response({'detail': 'Exercise not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ExerciseSerializers(exercise)
+        return Response(serializer.data, status=status.HTTP_200_OK)

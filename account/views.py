@@ -12,6 +12,11 @@ from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from .models import UserState
+
 
 def send_otp_email(email, otp_code):
     subject = '🔐 Verify your HomeWorkout Account with this OTP'
@@ -157,3 +162,33 @@ class AdminLoginView(APIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }, status=status.HTTP_200_OK)
+    
+
+class UserStateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            user_state = UserState.objects.get(user=request.user)
+        except UserState.DoesNotExist:
+            return Response({"message": "User state not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        bmi = user_state.bmi
+        if bmi:
+            if bmi < 18.5:
+                status_text = "Underweight"
+            elif 18.5 <= bmi < 25:
+                status_text = "Normal"
+            elif 25 <= bmi < 30:
+                status_text = "Overweight"
+            else:
+                status_text = "Obese"
+            bmi_display = f"{bmi} ({status_text})"
+        else:
+            bmi_display = "BMI not available"
+
+        return Response({
+            "total_calories": user_state.total_calories,
+            "total_minutes": round(user_state.total_minutes, 2) if user_state.total_minutes is not None else None,
+            "bmi": bmi_display
+        })

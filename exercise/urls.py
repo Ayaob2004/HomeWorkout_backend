@@ -10,6 +10,7 @@ from .views import (
     DayExerciseView,
     ExerciseByTypeView,
     ExerciseDayListView,
+    ExerciseDetailView,
     ExerciseView,
     ExerciseListView,
     ExerciseFilterView,
@@ -17,6 +18,7 @@ from .views import (
     GenerateChallengeView,
     AllChallengesView,
     DayExerciseDetailView,
+    GetAllArticlesView,
     StartChallengeDayView,
     HealthArticleView,
     HealthArticleListView,
@@ -44,6 +46,8 @@ urlpatterns = [
     path('check-day-availability/<int:challenge_id>/<int:day_number>/', CheckDayAvailabilityView.as_view(), name='check-day-availability'),
     path('muscle/<int:muscle_id>/exercises/', ExercisesByMuscleView.as_view(), name='muscle-exercises'),
     path('exercises-by-type/', ExerciseByTypeView.as_view(), name='exercises-by-type'),
+    path('articles/', GetAllArticlesView.as_view(), name='visible-articles'),
+    path('exercise/<int:exercise_id>/', ExerciseDetailView.as_view(), name='exercise-detail'),
 
 
     path('create-challenge/',ChallengeView.as_view(),name='create-challenge'),

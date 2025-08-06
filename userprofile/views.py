@@ -2,12 +2,15 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from account.models import UserState
+from exercise.views import calculate_bmi
 from .models import Profile, MuscleGroup
 from .serializers import ProfileBasicInfo, Moredetails, DaysAndTime , MuscleGroupSer , ProfileSer
 from rest_framework import generics
 from django.utils.translation import gettext_lazy as _  
 from rest_framework.permissions import AllowAny  
 from rest_framework.permissions import IsAdminUser
+from django.utils.timezone import now
 
 
 
@@ -27,6 +30,31 @@ class ProfileBasicInfoViews(APIView):
         serializer = ProfileBasicInfo(profile,data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileBasicInfoViews(APIView):
+    permission_classes = [permissions.IsAuthenticated]  # أصلها permissions وليس permissions**s**
+
+    def patch(self, request):
+        try:
+            profile = request.user.profile
+        except Profile.DoesNotExist:
+            return Response({"message": _("Profile not found")}, status=status.HTTP_404_NOT_FOUND)
+        serializer = ProfileBasicInfo(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            weight = request.data.get('weight', profile.weight)
+            height = request.data.get('height', profile.height)
+            if weight and height:
+                bmi_data = calculate_bmi(weight, height)
+                if 'bmi' in bmi_data:
+                    # إنشاء أو تحديث UserState
+                    user_state, created = UserState.objects.get_or_create(user=request.user)
+                    user_state.bmi = bmi_data['bmi']
+                    user_state.updated_at = now()
+                    user_state.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
