@@ -37,7 +37,8 @@ urlpatterns = [
     path('profile/<int:pk>/', AdminProfileDetailView.as_view(), name='admin-profile-detail'),
     path('profile/<int:pk>/update/', AdminProfileDetailView.as_view(), name='admin-update-profile'),
     path('exercises/filter/', ExerciseFilterView.as_view(), name='exercise-filter'),
-
+    
+    # Aya
     path('generate-challenge/', GenerateChallengeView.as_view(), name='generate-challenge'),
     path('allchallenges/', AllChallengesView.as_view(), name='user-and-all-challenges'),
     path('challenges/<int:pk>/day/<int:day_number>/', ChallengeDayDetailView.as_view(), name='challenge-day-detail'),
@@ -48,7 +49,7 @@ urlpatterns = [
     path('exercises-by-type/', ExerciseByTypeView.as_view(), name='exercises-by-type'),
     path('articles/', GetAllArticlesView.as_view(), name='visible-articles'),
     path('exercise/<int:exercise_id>/', ExerciseDetailView.as_view(), name='exercise-detail'),
-
+    # 
 
     path('create-challenge/',ChallengeView.as_view(),name='create-challenge'),
     path('update-challenge/<int:pk>/',ChallengeView.as_view(),name='update-challenge'),
