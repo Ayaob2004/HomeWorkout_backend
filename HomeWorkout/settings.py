@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'userprofile',
     'exercise',
     'dashboard',
+    'notification',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -183,3 +184,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5175",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+#for notifications
+import firebase_admin
+from firebase_admin import credentials
+
+FIREBASE_CRED_PATH = BASE_DIR / 'notification/secrets/home-workout-39fb5-firebase-adminsdk-fbsvc-b135c09da7.json'
+if not firebase_admin._apps:
+    cred = credentials.Certificate(FIREBASE_CRED_PATH)
+    firebase_admin.initialize_app(cred)
+

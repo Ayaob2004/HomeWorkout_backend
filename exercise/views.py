@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from datetime import datetime
 from django.utils import timezone
+from datetime import timedelta
 
 # Local application imports
 from .models import Exercise, Challenge, ChallengeDay, DayExercise, HealthArticle, MuscleGroup
@@ -579,7 +580,7 @@ class AllChallengesView(APIView):
             'user_challenge': user_challenge_data,
             'public_challenges': public_challenges_data
         })
-    
+
 class StartChallengeDayView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -589,27 +590,39 @@ class StartChallengeDayView(APIView):
         try:
             user_challenge = UserChallenge.objects.get(user=user, challenge_id=challenge_id)
             current_day = user_challenge.current_day or 1
+
+            user_state, _ = UserState.objects.get_or_create(user=user)
+            if user_state.updated_at:
+                time_since_last = timezone.now() - user_state.updated_at
+                if time_since_last < timedelta(hours=24):
+                    remaining = timedelta(hours=24) - time_since_last
+                    return Response({
+                        "error": f"You cannot start day {current_day} yet. "
+                                 f"Please wait {remaining.seconds // 3600}h "
+                                 f"{(remaining.seconds % 3600) // 60}m."
+                    }, status=status.HTTP_400_BAD_REQUEST)
             challenge_day = ChallengeDay.objects.get(challenge_id=challenge_id, day_number=current_day)
             # Calculate calories and duration
             day_exercises = DayExercise.objects.filter(challenge_day=challenge_day)
             total_duration = sum([ex.duration_seconds or 0 for ex in day_exercises])
             total_calories = sum([ex.calories_burned or 0 for ex in day_exercises])
             # Update UserState
-            user_state, _ = UserState.objects.get_or_create(user=user)
             user_state.total_minutes = (user_state.total_minutes or 0) + (total_duration / 60)
             user_state.total_calories = (user_state.total_calories or 0) + total_calories
             user_state.updated_at = timezone.now()
             user_state.save()
 
-            unlock_next_day.apply_async(args=[user_challenge.id], countdown=86400)  # 24 hours
+            unlock_next_day.apply_async(args=[user_challenge.id], countdown=86_400)
 
             return Response({
                 "message": f"Workout for day {current_day} has started. The next day will be unlocked in 24 hours."
             }, status=status.HTTP_200_OK)
+
         except UserChallenge.DoesNotExist:
             return Response({"error": "Challenge not found."}, status=status.HTTP_404_NOT_FOUND)
         except ChallengeDay.DoesNotExist:
             return Response({"error": "Challenge day not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class CheckDayAvailabilityView(APIView):

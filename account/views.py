@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from notification.views import register_fcm_token
 from .models import CustomUser, OTP
 from .serializers import RegisterSerializer
 from django.utils import timezone
@@ -124,12 +126,14 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
+        fcm_token = request.data.get('fcm_token')
         if email is None or password is None:
             return Response({"detail": "Email and password are required"}, status=status.HTTP_400_BAD_REQUEST)
         user = authenticate(request, username=email, password=password)
         if user is None:
             return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         refresh = RefreshToken.for_user(user)
+        register_fcm_token(user, fcm_token)
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
