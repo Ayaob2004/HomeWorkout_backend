@@ -670,8 +670,11 @@ class ExerciseByTypeView(APIView):
         exercise_type = request.query_params.get('type')
         if not exercise_type:
             return Response({"error": "type is required"}, status=400)
+
         exercises = Exercise.objects.filter(type=exercise_type)
-        total_duration = sum(ex.base_duration_seconds or 0 for ex in exercises)
+        total_duration_seconds = sum(ex.base_duration_seconds or 0 for ex in exercises)
+        total_duration_minutes = round(total_duration_seconds / 60)  
+
         count = exercises.count()
         data = []
         for ex in exercises:
@@ -681,11 +684,15 @@ class ExerciseByTypeView(APIView):
                 "image": request.build_absolute_uri(ex.image.url) if ex.image else None,
                 "duration": ex.base_duration_seconds,
             })
+
         return Response({
             "exercises": data,
-            "total_duration": total_duration,
+            "total_duration_minutes": total_duration_minutes,
             "count": count
         })
+
+
+
 
 
 class GetAllArticlesView(APIView):
