@@ -612,7 +612,7 @@ class StartChallengeDayView(APIView):
             user_state.updated_at = timezone.now()
             user_state.save()
 
-            unlock_next_day.apply_async(args=[user_challenge.id], countdown=86_400)
+            unlock_next_day.apply_async(args=[user_challenge.id], countdown=86400)
 
             return Response({
                 "message": f"Workout for day {current_day} has started. The next day will be unlocked in 24 hours."

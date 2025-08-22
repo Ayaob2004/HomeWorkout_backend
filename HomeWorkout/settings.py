@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'corsheaders',
-
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -139,7 +139,7 @@ LANGUAGES = [
     ('ar', 'Arabic'),
 ]
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Damascus'
 
 USE_I18N = True
 
@@ -181,11 +181,13 @@ EMAIL_HOST_PASSWORD = 'dgvn dzws nius gjzg'
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
-
+CELERY_TIMEZONE = 'Asia/Damascus'
+CELERY_ENABLE_UTC = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5175",
 ]
 CORS_ALLOW_CREDENTIALS = True
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 #for notifications
 

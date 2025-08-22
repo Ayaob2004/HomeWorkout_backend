@@ -20,5 +20,6 @@ def unlock_next_day(user_challenge_id):
                 challenge_day.save()
                 user_challenge.current_day = next_day
                 user_challenge.save()
+
     except UserChallenge.DoesNotExist:
         pass

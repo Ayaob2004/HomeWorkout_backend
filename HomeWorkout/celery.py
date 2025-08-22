@@ -8,9 +8,3 @@ app = Celery('HomeWorkout')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-app.conf.beat_schedule = {
-    "send-daily-workout-notifications": {
-        "task": "notification.tasks.send_daily_workout_notifications",
-        "schedule": crontab(minute="*"),
-    },
-}

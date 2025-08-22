@@ -6,7 +6,7 @@ from notification.views import send_notification
 
 @receiver(post_save, sender=Challenge)
 def send_new_challenge_notification(sender, instance, created, **kwargs):
-    if created:  
+    if created:
         tokens = list(
             FCMDevice.objects.exclude(token__isnull=True).values_list("token", flat=True)
         )

@@ -19,15 +19,16 @@ def send_notification(tokens, title, body):
     if not tokens:
         return None
 
-    message = messaging.MulticastMessage(
-        notification=messaging.Notification(
-            title=title,
-            body=body,
-        ),
-        tokens=tokens,
-    )
-    response = messaging.send_multicast(message)
-    print(f"Successfully sent: {response.success_count}, Failed: {response.failure_count}")
-    return response
-
-
+    for token in tokens:
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=title,
+                body=body,
+            ),
+            token=token,
+        )
+        try:
+            response = messaging.send(message)
+            print(f"Successfully sent to {token}: {response}")
+        except Exception as e:
+            print(f"Failed to send to {token}: {e}")
