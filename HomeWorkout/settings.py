@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import firebase_admin
+from firebase_admin import credentials
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -186,10 +188,9 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 #for notifications
-import firebase_admin
-from firebase_admin import credentials
 
-FIREBASE_CRED_PATH = BASE_DIR / 'notification/secrets/home-workout-39fb5-firebase-adminsdk-fbsvc-b135c09da7.json'
+
+FIREBASE_CRED_PATH = BASE_DIR / 'notification/secrets/fir-project-acf76-firebase-adminsdk-fbsvc-5cd255a322.json'
 if not firebase_admin._apps:
     cred = credentials.Certificate(FIREBASE_CRED_PATH)
     firebase_admin.initialize_app(cred)
