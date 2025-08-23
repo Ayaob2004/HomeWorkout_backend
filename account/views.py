@@ -18,7 +18,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from .models import UserState
-
+from decimal import Decimal
+from .models import Wallet, WalletTransaction
+from .serializers import WalletTopUpSerializer , WalletSerializer
+from rest_framework.permissions import IsAdminUser
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 def send_otp_email(email, otp_code):
     subject = '🔐 Verify your HomeWorkout Account with this OTP'
@@ -196,3 +200,48 @@ class UserStateView(APIView):
             "total_minutes": round(user_state.total_minutes, 2) if user_state.total_minutes is not None else None,
             "bmi": bmi_display
         })
+
+
+User = get_user_model()
+
+class WalletAPIView(APIView):
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
+    
+    def post(self, request):
+        serializer = WalletTopUpSerializer(data=request.data)
+        if serializer.is_valid():
+            user_id = serializer.validated_data['user_id']
+            amount = serializer.validated_data['amount']
+            description = serializer.validated_data['description']
+
+            try:
+                user = User.objects.get(id=user_id)
+                wallet, created = Wallet.objects.get_or_create(user=user)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            wallet.balance += Decimal(amount)  
+            wallet.save()
+            
+            WalletTransaction.objects.create(
+                wallet=wallet,
+                amount=amount,
+                transaction_type='CREDIT',
+                description=description
+            )
+
+            return Response({
+                "message": "Wallet topped up successfully",
+                "new_balance": wallet.balance
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class WalletDetailAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+        serializer = WalletSerializer(wallet)
+        return Response(serializer.data, status=status.HTTP_200_OK)

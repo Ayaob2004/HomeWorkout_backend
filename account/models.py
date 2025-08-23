@@ -6,6 +6,9 @@ import random
 from datetime import datetime
 from exercise.models import Challenge
 from django.core.validators import MaxValueValidator
+from django.conf import settings  
+
+
 
 
 class CustomUser(AbstractUser):
@@ -46,3 +49,23 @@ class UserChallenge(models.Model):
     started_at = models.DateField(null=True, blank=True)
     current_day = models.PositiveIntegerField(null=True,validators=[MaxValueValidator(28)])
     is_completed = models.BooleanField(null=True)
+
+
+class Wallet(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
+    def __str__(self):
+        return f"{self.user.username}'s Wallet"   
+
+
+class WalletTransaction(models.Model):
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=[('DEBIT', 'Debit'), ('CREDIT', 'Credit')])
+    timestamp = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.amount} - {self.wallet.user.username}"
+   

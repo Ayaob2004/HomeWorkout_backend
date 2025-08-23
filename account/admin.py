@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, OTP, UserState, UserChallenge
+from .models import CustomUser, OTP, UserState, UserChallenge , Wallet , WalletTransaction
 from django.contrib.auth.admin import UserAdmin
 
 
@@ -16,3 +16,5 @@ admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(OTP)
 admin.site.register(UserState)
 admin.site.register(UserChallenge)
+admin.site.register(Wallet)
+admin.site.register(WalletTransaction)

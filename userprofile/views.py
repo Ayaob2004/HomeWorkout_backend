@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework.permissions import AllowAny  
 from rest_framework.permissions import IsAdminUser
 from django.utils.timezone import now
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 
 
@@ -104,7 +106,8 @@ class ProfileViews(APIView):
 
 class AllUsersView(generics.ListAPIView):
     serializer_class = ProfileSer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser] 
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         return Profile.objects.all()
@@ -113,7 +116,7 @@ class AllUsersView(generics.ListAPIView):
         try:
             queryset = self.get_queryset()
             if request.user.is_staff:
-                data = list(queryset.values('user__username')) 
+                data = list(queryset.values('user__id','user__username')) 
                 return Response(data)
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
