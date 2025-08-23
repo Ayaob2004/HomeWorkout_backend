@@ -611,7 +611,7 @@ class StartChallengeDayView(APIView):
             user_state.total_calories = (user_state.total_calories or 0) + total_calories
             user_state.updated_at = timezone.now()
             user_state.save()
-
+            
             unlock_next_day.apply_async(args=[user_challenge.id], countdown=86400)
 
             return Response({
