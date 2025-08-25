@@ -19,18 +19,19 @@ class ExerciseSerializers(serializers.ModelSerializer):
         ]
 
 class DayExerciseSerializer(serializers.ModelSerializer):
-    exercise = ExerciseSerializers()
+    exercise = serializers.PrimaryKeyRelatedField(queryset=Exercise.objects.all())
 
     class Meta:
         model = DayExercise
-        fields = ['order', 'exercise']
+        fields = ['challenge_day', 'exercise', 'order', 'repetitions', 'duration_seconds', 'calories_burned']
 
 class ChallengeDaySerializer(serializers.ModelSerializer):
     exercises = serializers.SerializerMethodField()
+    challenge = serializers.PrimaryKeyRelatedField(queryset=Challenge.objects.all())
 
     class Meta:
         model = ChallengeDay
-        fields = ['week_number', 'day_number', 'exercises']
+        fields = ['challenge', 'week_number', 'day_number', 'exercises', 'is_available']
 
     def get_exercises(self, obj):
         day_exercises = DayExercise.objects.filter(challenge_day=obj).order_by('order')

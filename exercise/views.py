@@ -186,7 +186,11 @@ class ChallengeDayView(APIView):
         serializer = ChallengeDaySerializer(data=request.data)
         if serializer.is_valid():
             challengeDay = serializer.save()
-            return Response(ChallengeDaySerializer(challengeDay).data, status=status.HTTP_201_CREATED)
+            response_data = {
+            "id": challengeDay.id,
+            **ChallengeDaySerializer(challengeDay).data
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, pk):
@@ -242,8 +246,12 @@ class DayExerciseView(APIView):
         serializer = DayExerciseSerializer(data=request.data)
         if serializer.is_valid():
             dayExercise = serializer.save()
-            return Response(DayExerciseSerializer(dayExercise).data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+            response_data = {
+            "id": dayExercise.id,  # Include the ID
+            **DayExerciseSerializer(dayExercise).data  # Include all other serialized data
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, pk):
         try:
