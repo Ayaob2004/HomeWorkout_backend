@@ -234,6 +234,25 @@ class ChallengeDayListView(APIView):
         except ChallengeDay.DoesNotExist:
             return Response({"detail":"Challenge day not found"},status=status.HTTP_404_NOT_FOUND)    
 
+def format_day_exercise(day_exercise, request):
+    exercise = day_exercise.exercise
+    return {
+        "day_exercise_id": day_exercise.id,
+        "challenge_day": day_exercise.challenge_day.id,
+        "order": day_exercise.order,
+        "exercise": {
+            "id": exercise.id,
+            "name": exercise.name,
+            "description": exercise.description,
+            "goal": exercise.goal,
+            "type": exercise.type,
+            "repetitions": day_exercise.repetitions,
+            "duration_seconds": day_exercise.duration_seconds,
+            "calories_burned": day_exercise.calories_burned,
+            "image": request.build_absolute_uri(exercise.image.url) if exercise.image else None,
+        },
+    }
+
 
 class DayExerciseView(APIView):
     permission_classes = [IsAdminUser] 
@@ -245,54 +264,50 @@ class DayExerciseView(APIView):
         
         serializer = DayExerciseSerializer(data=request.data)
         if serializer.is_valid():
-            dayExercise = serializer.save()
-            response_data = {
-            "id": dayExercise.id,  # Include the ID
-            **DayExerciseSerializer(dayExercise).data  # Include all other serialized data
-            }
-            return Response(response_data, status=status.HTTP_201_CREATED)
+            day_exercise = serializer.save()
+            return Response(format_day_exercise(day_exercise, request), status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request, pk):
         try:
-            dayExercise = DayExercise.objects.get(pk=pk)
+            day_exercise = DayExercise.objects.get(pk=pk)
         except DayExercise.DoesNotExist:
             return Response({"detail": "day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = DayExerciseSerializer(dayExercise, data=request.data)
+        serializer = DayExerciseSerializer(day_exercise, data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            day_exercise = serializer.save()
+            return Response(format_day_exercise(day_exercise, request), status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
     
     def delete(self, request,pk):
         try:
-            dayExercise = DayExercise.objects.get(pk=pk)
+            day_exercise = DayExercise.objects.get(pk=pk)
         except DayExercise.DoesNotExist:
-            return Response({"detial":"day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
-        dayExercise.delete()
-        return Response({"detial":"day exercise deleted successfully."},status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail":"day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+        day_exercise.delete()
+        return Response({"detail":"day exercise deleted successfully."},status=status.HTTP_204_NO_CONTENT)
     
     def get(self,request,pk):
         try:
-            dayExercise = DayExercise.objects.get(pk=pk)
-            serializer = DayExerciseSerializer(dayExercise)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            day_exercise = DayExercise.objects.get(pk=pk)
+            return Response(format_day_exercise(day_exercise, request), status=status.HTTP_200_OK)
         except DayExercise.DoesNotExist:
             return Response({"detail": "day exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 class ExerciseDayListView(APIView):
     permission_classes = [IsAdminUser] 
     authentication_classes = [JWTAuthentication]
-    
+
     def get(self, request):
-        try:
-            dayExercise = DayExercise.objects.all()
-            serializer = DayExerciseSerializer(dayExercise, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except DayExercise.DoesNotExist:
-            return Response({"detail":"day exercise not found"},status=status.HTTP_404_NOT_FOUND)    
+        day_exercises = DayExercise.objects.all()
+        if not day_exercises.exists():
+            return Response({"detail": "no day exercises found"}, status=status.HTTP_404_NOT_FOUND)
+
+        data = [format_day_exercise(day_exercise, request) for day_exercise in day_exercises]
+        return Response(data, status=status.HTTP_200_OK)   
 
 
 class HealthArticleView(APIView):
@@ -681,7 +696,7 @@ class ExerciseByTypeView(APIView):
 
         exercises = Exercise.objects.filter(type=exercise_type)
         total_duration_seconds = sum(ex.base_duration_seconds or 0 for ex in exercises)
-        total_duration_minutes = round(total_duration_seconds / 60)  
+        total_duration = round(total_duration_seconds / 60)  
 
         count = exercises.count()
         data = []
@@ -695,7 +710,7 @@ class ExerciseByTypeView(APIView):
 
         return Response({
             "exercises": data,
-            "total_duration_minutes": total_duration_minutes,
+            "total_duration": total_duration,
             "count": count
         })
 
