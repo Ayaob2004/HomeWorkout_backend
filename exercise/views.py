@@ -61,15 +61,46 @@ class ExerciseView(APIView):
         exercise.delete()  
         return Response({"detail": "Exercise deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
     
-    def get(self,request,pk):
-        try:
-            exercise = Exercise.objects.get(pk=pk)
-            serializer = ExerciseSerializers(exercise)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exercise.DoesNotExist:
-            return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
-    
+    # def get(self,request,pk):
+    #     try:
+    #         exercise = Exercise.objects.get(pk=pk)
+    #         serializer = ExerciseSerializers(exercise)
 
+    #         return Response(serializer.data, status=status.HTTP_200_OK)
+    #     except Exercise.DoesNotExist:
+    #         return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, pk):
+            try:
+                exercise = Exercise.objects.get(pk=pk)
+                
+                response_data = {
+                    'id': exercise.id,
+                    'name': exercise.name,
+                    'goal': exercise.goal,
+                    'description': exercise.description,
+                    'image': request.build_absolute_uri(exercise.image.url) if exercise.image else None,
+                    'type': exercise.type,
+                    'base_repetitions': exercise.base_repetitions,
+                    'base_duration_seconds': exercise.base_duration_seconds,
+                    'base_calories_burned': exercise.base_calories_burned,
+                    'muscle_group': list(exercise.muscle_group.values_list('name', flat=True))
+                }
+                
+                return Response(response_data, status=status.HTTP_200_OK)
+            except Exercise.DoesNotExist:
+                return Response({"detail": "Exercise not found."}, status=status.HTTP_404_NOT_FOUND)
+
+# class ExerciseListView(APIView):
+#     permission_classes = [IsAdminUser] 
+#     authentication_classes = [JWTAuthentication]
+
+#     def get(self, request):
+#         try:
+#             exercises = Exercise.objects.all()
+#             serializer = ExerciseSerializers(exercises, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except Exercise.DoesNotExist:
+#             return Response({"detail":"Exercise not found"},status=status.HTTP_404_NOT_FOUND)    
 class ExerciseListView(APIView):
     permission_classes = [IsAdminUser] 
     authentication_classes = [JWTAuthentication]
@@ -77,11 +108,26 @@ class ExerciseListView(APIView):
     def get(self, request):
         try:
             exercises = Exercise.objects.all()
-            serializer = ExerciseSerializers(exercises, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            exercises_data = []
+            for exercise in exercises:
+                exercise_data = {
+                    'id': exercise.id,
+                    'name': exercise.name,
+                    'goal': exercise.goal,
+                    'description': exercise.description,
+                    'image': request.build_absolute_uri(exercise.image.url) if exercise.image else None,
+                    'type': exercise.type,
+                    'base_repetitions': exercise.base_repetitions,
+                    'base_duration_seconds': exercise.base_duration_seconds,
+                    'base_calories_burned': exercise.base_calories_burned,
+                    'muscle_group': list(exercise.muscle_group.values_list('name', flat=True))
+                }
+                exercises_data.append(exercise_data)
+            
+            return Response(exercises_data, status=status.HTTP_200_OK)
         except Exercise.DoesNotExist:
-            return Response({"detail":"Exercise not found"},status=status.HTTP_404_NOT_FOUND)    
-
+            return Response({"detail":"Exercise not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class ExerciseFilterView(APIView):
     permission_classes = [IsAdminUser] 
